@@ -8,6 +8,7 @@ class PortalUnespResponse
     private ?string $body            = null;
     private string|bool|null $title  = null;
     private array $breadcrumbs_stack = [];
+    private array $eval              = [];
 
     public function getBody(): string
     {
@@ -35,17 +36,17 @@ class PortalUnespResponse
     {
         $output = [];
 
-        if ($this->getBody() !== null) {
+        if ($this->getBody() !== null)
             $output['corpo'] = $this->getBody();
-        }
 
-        if ($this->getTitle() !== null) {
+        if ($this->getTitle() !== null)
             $output['titulo'] = $this->getTitle();
-        }
 
-        if (sizeof($this->breadcrumbs_stack) > 0) {
+        if (sizeof($this->breadcrumbs_stack) > 0)
             $output['breadcrumbs']['push'] = $this->breadcrumbs_stack;
-        };
+
+        if (sizeof($this->eval) > 0)
+            $output['eval'] = $this->singleLine(implode(';', $this->eval));
 
         return json_encode($output);
     }
@@ -57,5 +58,28 @@ class PortalUnespResponse
             'url'   => $url
         ];
         return $this;
+    }
+
+    public function addEval(string $code): self
+    {
+        $this->eval[] = $code;
+        return $this;
+    }
+
+    public function smartScroll(bool $bool = true): self
+    {
+        $this->addEval('sgcdSmartScroll()');
+        return $this;
+    }
+
+    /**
+     * Returns a string in a single line, to be used in data-attrs, i.e.
+     * @param string $string
+     * @return string
+     */
+    private function singleLine(?string $string = ''): string
+    {
+        $string = preg_replace("/\s+/", " ", $string);
+        return $string;
     }
 }
