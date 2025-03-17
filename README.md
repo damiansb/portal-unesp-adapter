@@ -24,7 +24,7 @@ composer require damiansb/portal-unesp-adapter
 
 require 'vendor/autoload.php';
 
-use DamianSB\PortalUnespAdapter\Adapter;
+use Damiansb\PortalUnespAdapter\Adapter;
 
 // Initialize the adapter
 $adapter = new Adapter([

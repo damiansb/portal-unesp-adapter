@@ -63,8 +63,8 @@ class PortalUnespAdapter
 
     public function url($url, $query_string = [])
     {
-        $site_url = $this->getSiteUrl();
-        $url      = $site_url . $url;
+        $site_url = rtrim($this->getSiteUrl(), "/ \t\n\r\0\x0B");
+        $url      = $site_url . '/' . ltrim($url, "/ \t\n\r\0\x0B");
 
         $query_string = array_filter($query_string);
 

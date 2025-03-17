@@ -1,7 +1,7 @@
 {
     "name": "damiansb/portal-unesp-adapter",
     "description": "An adapter for the UNESP Portal",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "type": "library",
     "license": "MIT",
     "authors": [
