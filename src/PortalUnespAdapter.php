@@ -6,8 +6,15 @@ class PortalUnespAdapter
 {
     private static ?PortalUnespAdapter $adapter = null;
     private string $site_url = '';
+    private string $ajax_hash = '#!/';
 
     private function __construct() {}
+
+    public function setAjaxHash(string $ajax_hash): self
+    {
+        $this->ajax_hash = $ajax_hash;
+        return $this;
+    }
 
     public static function getInstance(): PortalUnespAdapter
     {
@@ -61,10 +68,27 @@ class PortalUnespAdapter
         return $url_portal_unesp;
     }
 
+    public function addAjaxHashToUrl(string $url): string
+    {
+        $parts    = parse_url($url);
+        $path     = $parts['path'] ?? '';
+        $query    = isset($parts['query']) ? '?' . $parts['query'] : '';
+        $fragment = isset($parts['fragment']) ? '#' . $parts['fragment'] : '';
+
+        if (strpos($path, $this->ajax_hash) !== false)
+            return $url;
+
+        $baseUrl = $parts['scheme'] . '://' . $parts['host'];
+        if (isset($parts['port']))
+            $baseUrl .= ':' . $parts['port'];
+
+        return $baseUrl . '/' . $this->ajax_hash . ltrim($path, '/') . $query . $fragment;
+    }
+
     public function url(string $url, ?array $query_string = [], bool $ajax = true): string
     {
         $site_url = $this->getSiteUrl();
-        $site_url = $ajax ? $site_url : str_replace(['portal#!/', '#!/'], '', $site_url);
+        $site_url = $ajax ? $this->addAjaxHashToUrl($site_url) : str_replace(['portal#!/', '#!/'], '', $site_url);
         $site_url = rtrim($site_url, "/ \t\n\r\0\x0B");
         $url      = $site_url . '/' . ltrim($url, "/ \t\n\r\0\x0B");
 
@@ -89,9 +113,10 @@ class PortalUnespAdapter
         return $this->site_url;
     }
 
-    public function setSiteUrl(string $site_url): void
+    public function setSiteUrl(string $site_url): self
     {
         $this->site_url = $site_url;
+        return $this;
     }
 
     private function __clone() {}
