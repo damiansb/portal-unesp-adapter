@@ -103,15 +103,23 @@ class PortalUnespAdapter
         $site_url = rtrim($site_url, "/ \t\n\r\0\x0B");
         $url      = $site_url . '/' . ltrim($url, "/ \t\n\r\0\x0B");
 
+        $url = str_replace('#!/', '----- temp portal hash -----', $url);
+
         $query_string = array_filter($query_string);
 
         ksort($query_string);
+
+        $parts  = parse_url($url);
+        $anchor = $parts['fragment'] ?? '';
+        $url    = $parts['scheme'] . '://' . $parts['host'] . ($parts['path'] ?? '') . (isset($parts['query']) ? '?' . $parts['query'] : '');
 
         $url_padrao = preg_replace('/\/$/is', '', $url) . (sizeof($query_string) ? '?' : '') . http_build_query($query_string, '', '&', PHP_QUERY_RFC3986);
 
         $url_portal_unesp = str_replace(['?', '=', '&'], ['/v/', '::', '/'], $url_padrao);
 
-        return $url_portal_unesp;
+        $url_portal_unesp = str_replace('----- temp portal hash -----', '#!/', $url_portal_unesp);
+
+        return $url_portal_unesp . ($anchor ? '/a/' . $anchor : '');
     }
 
     public function convertSubmitAction()
