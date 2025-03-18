@@ -5,8 +5,9 @@ namespace Damiansb\PortalUnespAdapter;
 class PortalUnespAdapter
 {
     private static ?PortalUnespAdapter $adapter = null;
-    private string $site_url = '';
-    private string $ajax_hash = '#!/';
+    private string $site_url                    = '';
+    private string $ajax_hash                   = '#!/';
+    private array $patch_url_blacklist          = [];
 
     private function __construct() {}
 
@@ -23,16 +24,22 @@ class PortalUnespAdapter
         return self::$adapter;
     }
 
-    public function patchUrl($url, $args = [], $params = [])
+    public function addToPatchUrlBlacklist(string $var): self
+    {
+        $this->patch_url_blacklist[] = $var;
+        return $this;
+    }
+
+    public function patchUrl(string $url, array|string|null $args = [], array|string|null $params = [], ?string $anchor = ''): string
     {
         extract(array_merge([
-            'query_string' => null, //caso não queira usar o GET 
-            'dbo_route' => null, //nova rota do dbo, caso não seja a original
-        ], $params));
+            'query_string' => null,   //caso não queira usar o GET 
+            'dbo_route'    => null,   //nova rota do dbo, caso não seja a original
+        ], $params ?? []));
 
         //chaves que serão removidas e adicionadas na URL
         $delete = [];
-        $add = [];
+        $add    = [];
 
         //implodindo argumentos, caso seja passado como array.
         $args = implode('&', (array)$args);
@@ -51,6 +58,10 @@ class PortalUnespAdapter
             }
         }
 
+        //removendo os itens do patch_url_blacklist
+        foreach ($this->patch_url_blacklist as $var)
+            $delete[] = $var;
+
         //remove as chaves do $delete do array de query_string.
         $query_string = array_diff_key($query_string, array_flip($delete));
 
@@ -65,7 +76,7 @@ class PortalUnespAdapter
 
         $url_portal_unesp = str_replace(['?', '=', '&'], ['/v/', '::', '/'], $url_padrao);
 
-        return $url_portal_unesp;
+        return $url_portal_unesp . ($anchor ? '/a/' . $anchor : '');
     }
 
     public function addAjaxHashToUrl(string $url): string
