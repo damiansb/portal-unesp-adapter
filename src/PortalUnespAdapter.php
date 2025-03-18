@@ -61,9 +61,11 @@ class PortalUnespAdapter
         return $url_portal_unesp;
     }
 
-    public function url($url, $query_string = [])
+    public function url(string $url, ?array $query_string = [], bool $ajax = true): string
     {
-        $site_url = rtrim($this->getSiteUrl(), "/ \t\n\r\0\x0B");
+        $site_url = $this->getSiteUrl();
+        $site_url = $ajax ? $site_url : str_replace(['portal#!/', '#!/'], '', $site_url);
+        $site_url = rtrim($site_url, "/ \t\n\r\0\x0B");
         $url      = $site_url . '/' . ltrim($url, "/ \t\n\r\0\x0B");
 
         $query_string = array_filter($query_string);
